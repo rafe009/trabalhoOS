@@ -5,6 +5,7 @@
 package Telas;
 import java.sql.*;
 import dai.ModuloConexao;
+import java.awt.Color;
 import javax.swing.JOptionPane;
 
 /**
@@ -39,12 +40,15 @@ public void Logar(){
             if(perfil.equals("admin")){
             TelaPrincipal Principal = new TelaPrincipal();
             Principal.setVisible(true);
-            TelaPrincipal.MenRel.setEnabled(true);
-            TelaPrincipal.MenCadUsu.setEnabled(true);
+            TelaPrincipal.menRel.setEnabled(true);
+            TelaPrincipal.menCadUsu.setEnabled(true);
+            TelaPrincipal.lblusuario.setText(rs.getString(2));
+            TelaPrincipal.lblusuario.setForeground(Color.red);
             this.dispose();
             } else {
                 TelaPrincipal principal = new TelaPrincipal();
                 principal.setVisible(true);
+                TelaPrincipal.lblusuario.setText(rs.getString(2));
                 this.dispose();
             }
             
@@ -102,6 +106,11 @@ public void Logar(){
         BntLogin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BntLoginActionPerformed(evt);
+            }
+        });
+        BntLogin.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                BntLoginKeyPressed(evt);
             }
         });
 
@@ -167,6 +176,10 @@ public void Logar(){
         //chamando o metodo logar
         Logar();
     }//GEN-LAST:event_BntLoginActionPerformed
+
+    private void BntLoginKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_BntLoginKeyPressed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_BntLoginKeyPressed
 
     /**
      * @param args the command line arguments
