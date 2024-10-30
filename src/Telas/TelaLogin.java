@@ -32,10 +32,22 @@ public void Logar(){
         //se existir usuario e senha correspondente
         
         if (rs.next()){
+            //A linha abaixo obtem o conteudo do campo perfil da tabela tbusuarios
+            String perfil=rs.getString(6);
+            //System.out.println(perfil); para verificar se a lógica utilizada está correta
+            //estrutura de decisão para o tratamento do perfil utilizado pelo usuario
+            if(perfil.equals("admin")){
             TelaPrincipal Principal = new TelaPrincipal();
             Principal.setVisible(true);
+            TelaPrincipal.MenRel.setEnabled(true);
+            TelaPrincipal.MenCadUsu.setEnabled(true);
             this.dispose();
-            conexao.close();
+            } else {
+                TelaPrincipal principal = new TelaPrincipal();
+                principal.setVisible(true);
+                this.dispose();
+            }
+            
         } else{
             JOptionPane.showMessageDialog(null,"usuario e/ou senha inválido.");
         }
@@ -43,6 +55,7 @@ public void Logar(){
     } catch (Exception e) {
         JOptionPane.showMessageDialog(null, e);
     }
+    
 }
     /**
      * Creates new form TelaLogin
