@@ -21,6 +21,7 @@ ResultSet rs = null;
         initComponents();
          conexao = ModuloConexao.conector();
     }
+    //metodo de consulta de usuarios
 private void consultar() {
     String sql = "SELECT * FROM tbusuarios WHERE iduser=?";
     try {
@@ -43,7 +44,6 @@ private void consultar() {
                     txtUsuFone.setText(null);
                     txtUsuLogin.setText(null);
                     txtUsuSenha.setText(null);
-                    cboUsuPerfil.setSelectedItem(null);
                 }
             }
         }
@@ -53,21 +53,118 @@ private void consultar() {
         JOptionPane.showMessageDialog(null, "Erro ao consultar usuário: " + e.getMessage());
     }
 }
+//metodo para adicionar usuarios
+private void adicionar() {
+    String sql = "INSERT INTO tbusuarios(iduser, usuario, fone, login, senha, perfil) VALUES(?, ?, ?, ?, ?, ?)";
     
-    /*private void consultar(){
-        String sql = "Select * from tbusuarios where iduser=?";
-        try {
-            pst=conexao.prepareStatement(sql);
-            pst.setString(1, txtUsuId.getText());
-            rs=pst.executeQuery();
-            if (rs.next()) {
-                txtUsuNome.setText(rs.getString(2));
-            } else {
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null,e);
-        }
-    }*/
+    // Validação dos campos obrigatórios
+    if (txtUsuId.getText().isEmpty() || 
+        txtUsuNome.getText().isEmpty() || 
+        txtUsuLogin.getText().isEmpty() || 
+        txtUsuSenha.getText().isEmpty() || 
+        cboUsuPerfil.getSelectedItem() == null) {
+        
+        JOptionPane.showMessageDialog(null, "Preencha todos os campos obrigatórios.");
+        return; // Sai do método se algum campo estiver vazio
+    }
+    
+    try {
+        pst = conexao.prepareStatement(sql);
+        
+        // Converte o ID do usuário para inteiro
+        int userId = Integer.parseInt(txtUsuId.getText().trim());
+        pst.setInt(1, userId); // Use setInt para um valor inteiro
+        
+        pst.setString(2, txtUsuNome.getText());
+        pst.setString(3, txtUsuFone.getText());
+        pst.setString(4, txtUsuLogin.getText());
+        pst.setString(5, txtUsuSenha.getText());
+        pst.setString(6, cboUsuPerfil.getSelectedItem().toString());
+        
+        // A linha abaixo atualiza a tabela de usuários com os dados do formulário
+        pst.executeUpdate();
+        
+        JOptionPane.showMessageDialog(null, "Usuário adicionado com sucesso!");
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(null, "ID do usuário deve ser um número inteiro.");
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(null, "Erro ao adicionar usuário: " + e.getMessage());
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(null, e);
+    }
+}
+//metódo para alteração de dados do usuario
+private void alterar() {
+    String sql = "UPDATE tbusuarios SET usuario=?, fone=?, login=?, senha=?, perfil=? WHERE iduser=?";
+    
+    // Validação dos campos obrigatórios
+    if (txtUsuId.getText().isEmpty() || 
+        txtUsuNome.getText().isEmpty() || 
+        txtUsuLogin.getText().isEmpty() || 
+        txtUsuSenha.getText().isEmpty() || 
+        cboUsuPerfil.getSelectedItem() == null) {
+        
+        JOptionPane.showMessageDialog(null, "Preencha todos os campos obrigatórios.");
+        return; // Sai do método se algum campo estiver vazio
+    }
+    
+    try {
+        // Converte o ID do usuário para inteiro
+        int userId = Integer.parseInt(txtUsuId.getText().trim());
+        
+        pst = conexao.prepareStatement(sql);
+        pst.setString(1, txtUsuNome.getText());
+        pst.setString(2, txtUsuFone.getText());
+        pst.setString(3, txtUsuLogin.getText());
+        pst.setString(4, txtUsuSenha.getText());
+        pst.setString(5, cboUsuPerfil.getSelectedItem().toString());
+        pst.setInt(6, userId); // Use setInt para o ID do usuário
+        
+        // Executa a atualização
+        pst.executeUpdate();
+        JOptionPane.showMessageDialog(null, "Usuário atualizado com sucesso!");
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(null, "ID do usuário deve ser um número inteiro.");
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(null, "Erro ao atualizar usuário: " + e.getMessage());
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(null, e);
+    }
+}
+//metodo responsavel pela remoção de usuarios
+private void remover(){
+    
+   int confirma=JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover o usuário?","Atenção",JOptionPane.YES_NO_OPTION);
+   
+   if(confirma == JOptionPane.YES_OPTION){
+       String sql="delete from tbusuarios where iduser=?";
+       
+       try {
+           int userId = Integer.parseInt(txtUsuId.getText().trim());
+           
+           pst=conexao.prepareStatement(sql);
+           pst.setInt(1, userId);
+           int apagado = pst.executeUpdate();
+           
+           if (apagado>0) {
+               JOptionPane.showMessageDialog(null, "usuario removido com sucesso");
+               
+            txtUsuId.setText(null);
+            txtUsuNome.setText(null);
+            txtUsuFone.setText(null);
+            txtUsuLogin.setText(null);
+            txtUsuSenha.setText(null);
+           }
+           
+           
+           
+           
+       } catch (Exception e) {
+           JOptionPane.showMessageDialog(null, e);
+       }
+   }
+}
+  
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -93,21 +190,22 @@ private void consultar() {
         btnUsuRead = new javax.swing.JButton();
         btnUsuUpdate = new javax.swing.JButton();
         btnUsuDelete = new javax.swing.JButton();
+        jLabel7 = new javax.swing.JLabel();
 
         setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
         setTitle("Usuários");
 
-        jLabel1.setText("ID");
+        jLabel1.setText("*ID");
 
-        jLabel2.setText("Nome");
+        jLabel2.setText("*Nome");
 
-        jLabel3.setText("Login");
+        jLabel3.setText("*Login");
 
-        jLabel4.setText("Senha");
+        jLabel4.setText("*Senha");
 
-        jLabel5.setText("Perfil");
+        jLabel5.setText("*Perfil");
 
         jLabel6.setText("Fone");
 
@@ -123,6 +221,11 @@ private void consultar() {
         vtnUsuCreate.setToolTipText("Adicionar\n");
         vtnUsuCreate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         vtnUsuCreate.setPreferredSize(new java.awt.Dimension(80, 80));
+        vtnUsuCreate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                vtnUsuCreateActionPerformed(evt);
+            }
+        });
 
         btnUsuRead.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icones/icones/documento.png"))); // NOI18N
         btnUsuRead.setToolTipText("Consultar");
@@ -137,6 +240,11 @@ private void consultar() {
         btnUsuUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icones/icones/contract.png"))); // NOI18N
         btnUsuUpdate.setToolTipText("Alterar");
         btnUsuUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnUsuUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUsuUpdateActionPerformed(evt);
+            }
+        });
 
         btnUsuDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icones/icones/botao-de-deletar.png"))); // NOI18N
         btnUsuDelete.setToolTipText("Excluir");
@@ -146,6 +254,8 @@ private void consultar() {
                 btnUsuDeleteActionPerformed(evt);
             }
         });
+
+        jLabel7.setText("* Campos obrigatórios");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -181,14 +291,17 @@ private void consultar() {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(txtUsuSenha, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(cboUsuPerfil, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel1)
+                                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtUsuId, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                                .addComponent(cboUsuPerfil, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtUsuId, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel7)
+                        .addGap(63, 63, 63)))
                 .addGap(73, 73, 73))
         );
         layout.setVerticalGroup(
@@ -197,7 +310,8 @@ private void consultar() {
                 .addGap(21, 21, 21)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(txtUsuId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtUsuId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7))
                 .addGap(38, 38, 38)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
@@ -231,13 +345,21 @@ private void consultar() {
     }//GEN-LAST:event_cboUsuPerfilActionPerformed
 
     private void btnUsuDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUsuDeleteActionPerformed
-        // TODO add your handling code here:
+        remover();
     }//GEN-LAST:event_btnUsuDeleteActionPerformed
 
     private void btnUsuReadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUsuReadActionPerformed
         // chamando o metodo consultar
         consultar();
     }//GEN-LAST:event_btnUsuReadActionPerformed
+
+    private void vtnUsuCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vtnUsuCreateActionPerformed
+        adicionar();
+    }//GEN-LAST:event_vtnUsuCreateActionPerformed
+
+    private void btnUsuUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUsuUpdateActionPerformed
+        alterar();
+    }//GEN-LAST:event_btnUsuUpdateActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -251,6 +373,7 @@ private void consultar() {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JTextField txtUsuFone;
     private javax.swing.JTextField txtUsuId;
     private javax.swing.JTextField txtUsuLogin;
