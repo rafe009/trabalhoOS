@@ -11,160 +11,162 @@ package Telas;
 import java.sql.*;
 import dai.ModuloConexao;
 import javax.swing.JOptionPane;
+
 public class TelaUsuario extends javax.swing.JInternalFrame {
 
-   Connection conexao = null;
-PreparedStatement pst = null;
-ResultSet rs = null;
+    Connection conexao = null;
+    PreparedStatement pst = null;
+    ResultSet rs = null;
 
     public TelaUsuario() {
         initComponents();
-         conexao = ModuloConexao.conector();
+        conexao = ModuloConexao.conector();
     }
     //metodo de consulta de usuarios
-private void consultar() {
-    String sql = "SELECT * FROM tbusuarios WHERE iduser=?";
-    try {
-        // Tente converter o texto para um inteiro
-        int userId = Integer.parseInt(txtUsuId.getText().trim()); // Remove espaços em branco
 
-        try (PreparedStatement pst = conexao.prepareStatement(sql)) {
+    private void consultar() {
+        String sql = "SELECT * FROM tbusuarios WHERE iduser=?";
+        try {
+            // Tente converter o texto para um inteiro
+            int userId = Integer.parseInt(txtUsuId.getText().trim()); // Remove espaços em branco
+
+            try (PreparedStatement pst = conexao.prepareStatement(sql)) {
+                pst.setInt(1, userId); // Use setInt para um valor inteiro
+                try (ResultSet rs = pst.executeQuery()) {
+                    if (rs.next()) {
+                        txtUsuNome.setText(rs.getString(2)); // Supondo que o nome do usuário está na segunda coluna
+                        txtUsuFone.setText(rs.getString(3));
+                        txtUsuLogin.setText(rs.getString(4));
+                        txtUsuSenha.setText(rs.getString(5));
+                        cboUsuPerfil.setSelectedItem(rs.getString(6));
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Usuário não encontrado");
+                        //as linhas abaixo limpam os campos
+                        txtUsuNome.setText(null);
+                        txtUsuFone.setText(null);
+                        txtUsuLogin.setText(null);
+                        txtUsuSenha.setText(null);
+                    }
+                }
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "ID do usuário deve ser um número inteiro.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao consultar usuário: " + e.getMessage());
+        }
+    }
+//metodo para adicionar usuarios
+
+    private void adicionar() {
+        String sql = "INSERT INTO tbusuarios(iduser, usuario, fone, login, senha, perfil) VALUES(?, ?, ?, ?, ?, ?)";
+
+        // Validação dos campos obrigatórios
+        if (txtUsuId.getText().isEmpty()
+                || txtUsuNome.getText().isEmpty()
+                || txtUsuLogin.getText().isEmpty()
+                || txtUsuSenha.getText().isEmpty()
+                || cboUsuPerfil.getSelectedItem() == null) {
+
+            JOptionPane.showMessageDialog(null, "Preencha todos os campos obrigatórios.");
+            return; // Sai do método se algum campo estiver vazio
+        }
+
+        try {
+            pst = conexao.prepareStatement(sql);
+
+            // Converte o ID do usuário para inteiro
+            int userId = Integer.parseInt(txtUsuId.getText().trim());
             pst.setInt(1, userId); // Use setInt para um valor inteiro
-            try (ResultSet rs = pst.executeQuery()) {
-                if (rs.next()) {
-                    txtUsuNome.setText(rs.getString(2)); // Supondo que o nome do usuário está na segunda coluna
-                    txtUsuFone.setText(rs.getString(3));
-                    txtUsuLogin.setText(rs.getString(4));
-                    txtUsuSenha.setText(rs.getString(5));
-                    cboUsuPerfil.setSelectedItem(rs.getString(6));
-                } else {
-                    JOptionPane.showMessageDialog(null, "Usuário não encontrado");
-                    //as linhas abaixo limpam os campos
+
+            pst.setString(2, txtUsuNome.getText());
+            pst.setString(3, txtUsuFone.getText());
+            pst.setString(4, txtUsuLogin.getText());
+            pst.setString(5, txtUsuSenha.getText());
+            pst.setString(6, cboUsuPerfil.getSelectedItem().toString());
+
+            // A linha abaixo atualiza a tabela de usuários com os dados do formulário
+            pst.executeUpdate();
+
+            JOptionPane.showMessageDialog(null, "Usuário adicionado com sucesso!");
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "ID do usuário deve ser um número inteiro.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao adicionar usuário: " + e.getMessage());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+    }
+//metódo para alteração de dados do usuario
+
+    private void alterar() {
+        String sql = "UPDATE tbusuarios SET usuario=?, fone=?, login=?, senha=?, perfil=? WHERE iduser=?";
+
+        // Validação dos campos obrigatórios
+        if (txtUsuId.getText().isEmpty()
+                || txtUsuNome.getText().isEmpty()
+                || txtUsuLogin.getText().isEmpty()
+                || txtUsuSenha.getText().isEmpty()
+                || cboUsuPerfil.getSelectedItem() == null) {
+
+            JOptionPane.showMessageDialog(null, "Preencha todos os campos obrigatórios.");
+            return; // Sai do método se algum campo estiver vazio
+        }
+
+        try {
+            // Converte o ID do usuário para inteiro
+            int userId = Integer.parseInt(txtUsuId.getText().trim());
+
+            pst = conexao.prepareStatement(sql);
+            pst.setString(1, txtUsuNome.getText());
+            pst.setString(2, txtUsuFone.getText());
+            pst.setString(3, txtUsuLogin.getText());
+            pst.setString(4, txtUsuSenha.getText());
+            pst.setString(5, cboUsuPerfil.getSelectedItem().toString());
+            pst.setInt(6, userId); // Use setInt para o ID do usuário
+
+            // Executa a atualização
+            pst.executeUpdate();
+            JOptionPane.showMessageDialog(null, "Usuário atualizado com sucesso!");
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "ID do usuário deve ser um número inteiro.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao atualizar usuário: " + e.getMessage());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+    }
+//metodo responsavel pela remoção de usuarios
+
+    private void remover() {
+
+        int confirma = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover o usuário?", "Atenção", JOptionPane.YES_NO_OPTION);
+
+        if (confirma == JOptionPane.YES_OPTION) {
+            String sql = "delete from tbusuarios where iduser=?";
+
+            try {
+                int userId = Integer.parseInt(txtUsuId.getText().trim());
+
+                pst = conexao.prepareStatement(sql);
+                pst.setInt(1, userId);
+                int apagado = pst.executeUpdate();
+
+                if (apagado > 0) {
+                    JOptionPane.showMessageDialog(null, "usuario removido com sucesso");
+
+                    txtUsuId.setText(null);
                     txtUsuNome.setText(null);
                     txtUsuFone.setText(null);
                     txtUsuLogin.setText(null);
                     txtUsuSenha.setText(null);
                 }
+
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);
             }
         }
-    } catch (NumberFormatException e) {
-        JOptionPane.showMessageDialog(null, "ID do usuário deve ser um número inteiro.");
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(null, "Erro ao consultar usuário: " + e.getMessage());
     }
-}
-//metodo para adicionar usuarios
-private void adicionar() {
-    String sql = "INSERT INTO tbusuarios(iduser, usuario, fone, login, senha, perfil) VALUES(?, ?, ?, ?, ?, ?)";
-    
-    // Validação dos campos obrigatórios
-    if (txtUsuId.getText().isEmpty() || 
-        txtUsuNome.getText().isEmpty() || 
-        txtUsuLogin.getText().isEmpty() || 
-        txtUsuSenha.getText().isEmpty() || 
-        cboUsuPerfil.getSelectedItem() == null) {
-        
-        JOptionPane.showMessageDialog(null, "Preencha todos os campos obrigatórios.");
-        return; // Sai do método se algum campo estiver vazio
-    }
-    
-    try {
-        pst = conexao.prepareStatement(sql);
-        
-        // Converte o ID do usuário para inteiro
-        int userId = Integer.parseInt(txtUsuId.getText().trim());
-        pst.setInt(1, userId); // Use setInt para um valor inteiro
-        
-        pst.setString(2, txtUsuNome.getText());
-        pst.setString(3, txtUsuFone.getText());
-        pst.setString(4, txtUsuLogin.getText());
-        pst.setString(5, txtUsuSenha.getText());
-        pst.setString(6, cboUsuPerfil.getSelectedItem().toString());
-        
-        // A linha abaixo atualiza a tabela de usuários com os dados do formulário
-        pst.executeUpdate();
-        
-        JOptionPane.showMessageDialog(null, "Usuário adicionado com sucesso!");
-    } catch (NumberFormatException e) {
-        JOptionPane.showMessageDialog(null, "ID do usuário deve ser um número inteiro.");
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(null, "Erro ao adicionar usuário: " + e.getMessage());
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(null, e);
-    }
-}
-//metódo para alteração de dados do usuario
-private void alterar() {
-    String sql = "UPDATE tbusuarios SET usuario=?, fone=?, login=?, senha=?, perfil=? WHERE iduser=?";
-    
-    // Validação dos campos obrigatórios
-    if (txtUsuId.getText().isEmpty() || 
-        txtUsuNome.getText().isEmpty() || 
-        txtUsuLogin.getText().isEmpty() || 
-        txtUsuSenha.getText().isEmpty() || 
-        cboUsuPerfil.getSelectedItem() == null) {
-        
-        JOptionPane.showMessageDialog(null, "Preencha todos os campos obrigatórios.");
-        return; // Sai do método se algum campo estiver vazio
-    }
-    
-    try {
-        // Converte o ID do usuário para inteiro
-        int userId = Integer.parseInt(txtUsuId.getText().trim());
-        
-        pst = conexao.prepareStatement(sql);
-        pst.setString(1, txtUsuNome.getText());
-        pst.setString(2, txtUsuFone.getText());
-        pst.setString(3, txtUsuLogin.getText());
-        pst.setString(4, txtUsuSenha.getText());
-        pst.setString(5, cboUsuPerfil.getSelectedItem().toString());
-        pst.setInt(6, userId); // Use setInt para o ID do usuário
-        
-        // Executa a atualização
-        pst.executeUpdate();
-        JOptionPane.showMessageDialog(null, "Usuário atualizado com sucesso!");
-    } catch (NumberFormatException e) {
-        JOptionPane.showMessageDialog(null, "ID do usuário deve ser um número inteiro.");
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(null, "Erro ao atualizar usuário: " + e.getMessage());
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(null, e);
-    }
-}
-//metodo responsavel pela remoção de usuarios
-private void remover(){
-    
-   int confirma=JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover o usuário?","Atenção",JOptionPane.YES_NO_OPTION);
-   
-   if(confirma == JOptionPane.YES_OPTION){
-       String sql="delete from tbusuarios where iduser=?";
-       
-       try {
-           int userId = Integer.parseInt(txtUsuId.getText().trim());
-           
-           pst=conexao.prepareStatement(sql);
-           pst.setInt(1, userId);
-           int apagado = pst.executeUpdate();
-           
-           if (apagado>0) {
-               JOptionPane.showMessageDialog(null, "usuario removido com sucesso");
-               
-            txtUsuId.setText(null);
-            txtUsuNome.setText(null);
-            txtUsuFone.setText(null);
-            txtUsuLogin.setText(null);
-            txtUsuSenha.setText(null);
-           }
-           
-           
-           
-           
-       } catch (Exception e) {
-           JOptionPane.showMessageDialog(null, e);
-       }
-   }
-}
-  
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
