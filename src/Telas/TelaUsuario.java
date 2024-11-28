@@ -126,6 +126,7 @@ public class TelaUsuario extends javax.swing.JInternalFrame {
 
             // Executa a atualização
             pst.executeUpdate();
+            limpar();
             JOptionPane.showMessageDialog(null, "Usuário atualizado com sucesso!");
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(null, "ID do usuário deve ser um número inteiro.");
@@ -154,17 +155,21 @@ public class TelaUsuario extends javax.swing.JInternalFrame {
                 if (apagado > 0) {
                     JOptionPane.showMessageDialog(null, "usuario removido com sucesso");
 
-                    txtUsuId.setText(null);
-                    txtUsuNome.setText(null);
-                    txtUsuFone.setText(null);
-                    txtUsuLogin.setText(null);
-                    txtUsuSenha.setText(null);
+                   limpar();
                 }
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, e);
             }
         }
+    }
+    
+    private void limpar(){
+         txtUsuId.setText(null);
+                    txtUsuNome.setText(null);
+                    txtUsuFone.setText(null);
+                    txtUsuLogin.setText(null);
+                    txtUsuSenha.setText(null);
     }
 
     /**
